@@ -1,27 +1,67 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'io.qameta.allure' version '2.11.2'
+    id "io.freefair.lombok" version "8.4"
 }
-
-group 'org.example'
-version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    testImplementation(
-            'org.junit.jupiter:junit-jupiter-api:5.8.1',
-            'org.seleniumhq.selenium:selenium-java:3.141.59',
-            'io.github.bonigarcia:webdrivermanager:5.2.1',
-            'org.aeonbits.owner:owner:1.0.4',
-            'org.assertj:assertj-core:3.23.1'
-    )
-    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.8.1')
+def selenideVersion = "7.7.3",
+    restAssuredVersion = "5.4.0",
+    allureVersion = "2.21.0",
+    junitVersion = "5.10.1",
+    jacksonVersion = "2.16.1",
+    aspectjweaverVersion = '1.9.20.1'
+
+allure {
+    report {
+        version.set(allureVersion)
+    }
+    adapter {
+        aspectjWeaver.set(true)
+        frameworks {
+            junit5 {
+                adapterVersion.set(allureVersion)
+            }
+        }
+    }
 }
 
-test {
+dependencies {
+    testImplementation(
+            "com.codeborne:selenide:$selenideVersion",
+            "io.qameta.allure:allure-selenide:$allureVersion",
+            "io.rest-assured:rest-assured:$restAssuredVersion",
+            "io.rest-assured:json-schema-validator:$restAssuredVersion",
+            "io.qameta.allure:allure-rest-assured:$allureVersion",
+            "org.junit.jupiter:junit-jupiter:$junitVersion",
+            "org.aspectj:aspectjweaver:$aspectjweaverVersion",
+            'org.slf4j:slf4j-simple:2.0.9',
+            'org.assertj:assertj-core:3.24.2',
+            'io.github.bonigarcia:webdrivermanager:5.8.0',
+            'org.aeonbits.owner:owner:1.0.4',
+            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion",
+            "com.fasterxml.jackson.core:jackson-core:$jacksonVersion",
+            "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+    )
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
     useJUnitPlatform()
-    //-PbaseUrl=https://github.com -Pbrowser=FIREFOX
     systemProperties(System.getProperties())
+
+    testLogging {
+        lifecycle {
+            events "started", "skipped", "failed", "standard_error", "standard_out"
+            exceptionFormat "short"
+        }
+    }
 }
